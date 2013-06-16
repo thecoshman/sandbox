@@ -19,11 +19,10 @@ namespace GLutil {
         }
 
         std::string getLog(){
-            #define LOG_SIZE 512
-            GLchar log[LOG_SIZE];
-            gl::GetShaderInfoLog(shader, LOG_SIZE, NULL, log);
-            return std::string(static_cast<char*>(log));
-            #undef LOG_SIZE
+            int logSize = 512;
+            std::vector<GLchar> log(logSize);
+            gl::GetShaderInfoLog(shader, logSize, NULL, log.data());
+            return std::string(static_cast<char*>(log.data()));
         }
     private:
         GLuint shader;
