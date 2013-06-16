@@ -1,0 +1,12 @@
+# Compiled Object files
+*.o
+
+# Compiled Static libraries
+*.a
+
+# Build Information
+*.d
+
+# Executable
+peanuts_demo
+*.exe

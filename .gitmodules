@@ -1,0 +1,6 @@
+[submodule "peanuts"]
+	path = peanuts
+	url = git@github.com:thecoshman/peanuts.git
+[submodule "pinkpill"]
+	path = pinkpill
+	url = git@github.com:thecoshman/pinkpill.git
