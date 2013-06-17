@@ -4,3 +4,6 @@
 [submodule "pinkpill"]
 	path = pinkpill
 	url = git@github.com:thecoshman/pinkpill.git
+[submodule "gldr"]
+	path = gldr
+	url = git@github.com:GLDRorg/GLDR.git

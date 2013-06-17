@@ -3,8 +3,9 @@
 #include <glload/gl_core.hpp>
 #include "common/window.hpp"
 #include <iostream>
-#include "GLutil/shader.hpp"
-#include "GLutil/buffers.hpp"
+#include "shader.hpp"
+#include "vertexBuffer.hpp"
+#include "vertexArray.hpp"
 
 bool run;
 struct EventHandler : Peanuts::genericEventHandler{
@@ -47,8 +48,8 @@ namespace Peanuts{
             0.5, -0.5,
         };
 
-        GLutil::VertexBuffer vertexBuffer = GLutil::VertexBuffer();
-        vertexBuffer.BufferData(vertexData);
+        gldr::VertexBuffer vertexBuffer;
+        vertexBuffer.bufferData(vertexData);
 
         std::string vert_shader_code = (
             "#version 150\n"
@@ -68,13 +69,12 @@ namespace Peanuts{
             "    out_color = vec4(0.0, 1.0, 1.0, 1.0);\n"
             "}\n"
         );
-        GLutil::Program program = GLutil::Program(vert_shader_code, frag_shader_code);
+        gldr::Program program(vert_shader_code, frag_shader_code);
 
-        GLuint vao;
-        gl::GenVertexArrays(1, &vao);
-        gl::BindVertexArray(vao);
+        gldr::VertexArray vao;
+        vao.bind();
 
-        GLint position_attribute = program.GetAttribLocation("position");
+        GLint position_attribute = program.getAttribLocation("position");
         program.use();
 
         // Specify how the data for position can be accessed
@@ -84,7 +84,7 @@ namespace Peanuts{
 
         while (run) {
             gl::Clear(gl::GL_COLOR_BUFFER_BIT);
-            gl::BindVertexArray(vao);
+            vao.bind();
             gl::DrawArrays(gl::GL_TRIANGLES, 0, 12);
 
             std::this_thread::sleep_for(dura);
