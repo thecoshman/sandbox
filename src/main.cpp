@@ -32,9 +32,6 @@ std::string loadShader(const std::string& sourceFile){
         std::cerr << "Failed top open '" << sourceFile << "'" << std::endl;
         return "";
     }
-    //std::stringstream stream;
-    //stream << file.rdbuf();
-
     std::string slurped;
     file.seekg(0, std::ios::end);
     slurped.resize(file.tellg());
