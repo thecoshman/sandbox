@@ -48,8 +48,11 @@ namespace Peanuts{
         auto win  = Peanuts::Window::create(windowOptions);
         EventHandler eventHandler;
 
+        gldr::VertexArray vao;
+        vao.bind();
+
         gl::ClearColor(1.0f, 0.0f, 0.0f, 0.0f);
-        gl::PolygonMode(gl::GL_FRONT, gl::GL_FILL);
+        //gl::PolygonMode(gl::GL_FRONT, gl::GL_FILL);
 
         std::vector<GLfloat> vertexData = {
             -0.5, -0.5,
@@ -61,63 +64,50 @@ namespace Peanuts{
             0, 1, 2,
             2, 3, 0
         };
-        std::vector<GLfloat> colors;
-        for(int i = 0; i < 12; ++i) {
-            float t = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-            colors.push_back(9*(1-t)*t*t*t);
-            colors.push_back(15*(1-t)*(1-t)*t*t);
-            colors.push_back(8.5*(1-t)*(1-t)*(1-t)*t);
-            i += 3;
-        }
+        std::vector<GLfloat> colors = {
+            1.0,0.0,0.0,
+            0.0,1.0,0.0,
+            0.0,0.0,1.0,
+            0.0,1.0,1.0
+        };
+//        for(int i = 0; i < 12; ++i) {
+//            float t = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+//            colors.push_back(9*(1-t)*t*t*t);
+//            colors.push_back(15*(1-t)*(1-t)*t*t);
+//            colors.push_back(8.5*(1-t)*(1-t)*(1-t)*t);
+//            i += 3;
+//        }
 
         gldr::VertexBuffer vertexBuffer;
         vertexBuffer.bufferData(vertexData);
-        std::cout << "Buffered vertex data" << std::endl;
         gldr::VertexBuffer colorBuffer;
         colorBuffer.bufferData(colors);
-        std::cout << "Buffered color data" << std::endl;
         gldr::VertexBuffer indexBuffer(gldr::VertexBuffer::BufferType::INDEX);
         indexBuffer.bufferData(indexdata);
-        std::cout << "buffered index data" << std::endl;
 
         gldr::Program program(loadShader("resource/shaders/basic.vert"), loadShader("resource/shaders/basic.frag"));
         GLint position_attribute = program.getAttribLocation("position");
         GLint color_attribute = program.getAttribLocation("color");
         program.use();
-        std::cout << "Shader program in use" << std::endl;
-
-        gldr::VertexArray vao;
-        vao.bind();
-        std::cout << "Bound vao" << std::endl;
 
         vertexBuffer.bind();
         gl::VertexAttribPointer(position_attribute, 2, gl::GL_FLOAT, gl::GL_FALSE, 0, 0);
         gl::EnableVertexAttribArray(position_attribute);
-        std::cout << "'position_attribute' locked in" << std::endl;
         colorBuffer.bind();
         gl::VertexAttribPointer(color_attribute, 3, gl::GL_FLOAT, gl::GL_FALSE, 0, 0);
         gl::EnableVertexAttribArray(color_attribute);
-        std::cout << "'color_attribute' locked in" << std::endl;
 
         while (run) {
-            std::cout << "Main loop start!" << std::endl;
             gl::Clear(gl::GL_COLOR_BUFFER_BIT);
-            std::cout << "screen clear" << std::endl;
             vao.bind();
-            std::cout << "bound vao" << std::endl;
             gl::DrawElements(gl::GL_TRIANGLES, 6, gl::GL_UNSIGNED_INT, 0);
-            std::cout << "DrawElements" << std::endl;
 
             std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-            std::cout << "what a sleep" << std::endl;
             win->pumpEvents();
-            std::cout << "Events pumped" << std::endl;
             while(auto event = win->pollEvent()){
                 boost::apply_visitor(eventHandler, *event);
             }
-            std::cout << "Events proccessed" << std::endl;
             win->swapBuffers();
-            std::cout << "Buffers swapped " << std::endl;
         }
         return 0;
     }
