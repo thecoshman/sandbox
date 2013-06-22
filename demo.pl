@@ -12,7 +12,7 @@ $pp->set_options(
     build_folder => 'bin/',
     obj_folder => 'bin/obj',
     linker_flags => '-Lpeanuts/bin -Lpeanuts/dependencies/bin',
-    link_libraries => 'peanuts X11 GL glload ',
+    link_libraries => 'peanuts X11 GL glload png',
     program_name => 'peanuts_demo',
 );
 $, = "\n";

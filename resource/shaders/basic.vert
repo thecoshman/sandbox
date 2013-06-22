@@ -2,10 +2,12 @@
 
 in vec4 position;
 in vec4 color;
+in vec2 texture_coord;
 out vec4 color_from_vshader;
+out vec2 texture_coord_from_vshader;
 
 void main() {
     gl_Position = position;
     color_from_vshader = color;
-//    color_from_vshader = vec4(0.0, 1.0, 1.0, 1.0);
+    texture_coord_from_vshader = texture_coord;
 }
