@@ -80,11 +80,17 @@ namespace Peanuts{
 //            colors.push_back(8.5*(1-t)*(1-t)*(1-t)*t);
 //            i += 3;
 //        }
+//        std::vector<GLfloat> textureCoord = {
+//            -1.0, -1.0,
+//            2.0, -1.0,
+//            2.0, 2.0,
+//            -1.0, 2.0,
+//        };
         std::vector<GLfloat> textureCoord = {
-            -1.0, -1.0,
-            2.0, -1.0,
-            2.0, 2.0,
-            -1.0, 2.0,
+            0.0, 0.0,
+            1.0, 0.0,
+            1.0, 1.0,
+            0.0, 1.0,
         };
 
         gldr::VertexBuffer vertexBuffer;
@@ -105,15 +111,38 @@ namespace Peanuts{
         boost::gil::rgba8_image_t image;
         boost::gil::png_read_image("resource/images/steam.png", image);
         std::cout << "Width: " << image.width() << std::endl << "Height: " << image.height() << std::endl << "Channels: " << boost::gil::num_channels<boost::gil::rgba8_image_t>() << std::endl;
-        struct dumbPixel{
-            float r,g,b,a;
+
+        struct DumbPixel{
+            unsigned char r,g,b,a;
         };
-        std::vector<dumbPixel> rawImageData;
-        for(int row = 0; row < image.height(); ++row){
-            for(int column = 0; column < image.width(); ++column){
-                rawImageData.push_back(dumbPixel{0.0,0.0,1.0,1.0});
-            }
-        }
+//        std::vector<DumbPixel> rawImageData;
+//        for(int row = 0; row < image.height(); ++row){
+//            for(int column = 0; column < image.width(); ++column){
+//                rawImageData.push_back(DumbPixel{0.0,0.0,1.0,1.0});
+//
+//            }
+//        }
+
+        struct PixelInserter{
+                std::vector<DumbPixel>* storage;
+                PixelInserter(std::vector<DumbPixel>* s) : storage(s) {}
+                void operator()(boost::gil::rgba8_pixel_t p) const {
+                    //get_color(p,red_t())
+                    //storage->push_back(DumbPixel{boost::gil::at_c<0>(p), boost::gil::at_c<1>(p), boost::gil::at_c<2>(p), boost::gil::at_c<3>(p)});
+                    //storage->push_back(DumbPixel{
+                    //    boost::gil::get_color(p, boost::gil::red_t()),
+                    //    boost::gil::get_color(p, boost::gil::green_t()),
+                    //    boost::gil::get_color(p, boost::gil::blue_t()),
+                    //    boost::gil::get_color(p, boost::gil::alpha_t())
+                    //});
+                    storage->push_back(DumbPixel{p[0], p[1], p[2], p[3]});
+                }
+        };
+
+        std::vector<DumbPixel> extractedPixelData;
+        extractedPixelData.reserve(image.width() * image.height() * boost::gil::num_channels<boost::gil::rgba8_image_t>());
+        boost::gil::for_each_pixel(boost::gil::const_view(image), PixelInserter(&extractedPixelData));
+
 //        boost::gil::rgb8_image_t image;
 //        boost::gil::png_read_and_convert_image("resource/images/crate.JPG", image);
 //boost::fil::image_read_settings<jpeg_tag> readSettings;
@@ -125,8 +154,9 @@ namespace Peanuts{
         tex.imageData(48, 48, // I know this based on the file I am using, non hardcoded version can comelater
             gldr::Texture::Format::RGBA,
             gldr::Texture::InternalFormat::RGBA,
-            gldr::Texture::DataType::Float,
-            rawImageData.data()
+            gldr::Texture::DataType::UnsignedByte,
+            //rawImageData.data()
+            extractedPixelData.data()
         );
 
         gldr::Program program(loadShader("resource/shaders/basic.vert"), loadShader("resource/shaders/basic.frag"));
