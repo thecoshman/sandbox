@@ -85,10 +85,10 @@ namespace Peanuts{
 //            -1.0, 2.0,
 //        };
         std::vector<GLfloat> textureCoord = {
-            0.0, 0.0,
-            1.0, 0.0,
-            1.0, 1.0,
             0.0, 1.0,
+            1.0, 1.0,
+            1.0, 0.0,
+            0.0, 0.0,
         };
 
         gldr::VertexBuffer vertexBuffer;
@@ -105,8 +105,8 @@ namespace Peanuts{
         tex.setFiltering(gldr::Texture::FilteringDirection::Minification, gldr::Texture::FilteringMode::Linear);
         tex.setFiltering(gldr::Texture::FilteringDirection::Magnification, gldr::Texture::FilteringMode::Linear);
         {
-            auto image = loadImage("resource/images/steam.png");
-            
+            auto image = loadImage("resource/images/pheonixflames.png");
+
             tex.imageData(image.width, image.height,
                 gldr::Texture::Format::RGBA,
                 gldr::Texture::InternalFormat::RGBA,

@@ -1,4 +1,5 @@
 #include "imageLoader.hpp"
+#include <algorithm>
 #include <boost/gil/gil_all.hpp>
 #include <boost/gil/extension/io/png_dynamic_io.hpp>
 
@@ -21,6 +22,30 @@ namespace Pixel{
     };
 }
 
+
+template <typename T>
+void flipImage(std::vector<T>& image, int width){
+    std::vector<T> tempRowA, tempRowB;
+    tempRowA.reserve(width);
+    tempRowB.reserve(width);
+    int rowCount = image.size() / width;
+    std::cout << "'" << image.size() << "' pixels at '" << width << "' pixels per row makes for '" << rowCount << "' rows, by my maths" << std::endl;
+    int otherRow = rowCount;
+    int currentRow = 0;
+    while(currentRow < otherRow){
+        otherRow = rowCount - currentRow - 1;
+        auto rowABegin = image.begin() + (currentRow * width);
+        auto rowAEnd = image.begin() + ((currentRow * width) + width);
+        auto rowBBegin = image.begin() + (otherRow * width);
+        auto rowBEnd = image.begin() + ((otherRow * width) + width);
+        std::copy(rowABegin, rowAEnd, tempRowA.begin());
+        std::copy(rowBBegin, rowBEnd, tempRowB.begin());
+        std::copy(tempRowA.begin(), tempRowA.end(), rowBBegin);
+        std::copy(tempRowB.begin(), tempRowB.end(), rowABegin);
+        ++currentRow;
+    }
+}
+
 imageData loadImage_PNG_rgba8(const std::string& imagePath){
     boost::gil::rgba8_image_t image;
     boost::gil::png_read_image(imagePath, image);
@@ -28,6 +53,8 @@ imageData loadImage_PNG_rgba8(const std::string& imagePath){
     std::vector<Pixel::rgba8> pixelData;
     pixelData.reserve(image.width() * image.height() * boost::gil::num_channels<boost::gil::rgba8_image_t>());
     boost::gil::for_each_pixel(boost::gil::const_view(image), Pixel::Extractor<Pixel::rgba8>(&pixelData));
+
+    flipImage(pixelData, image.width());
 
     return imageData{image.width(), image.height(), Pixel::Format::rgba8, pixelData};
 }
