@@ -4,15 +4,13 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <boost/mpl/vector.hpp>
-#include <boost/gil/gil_all.hpp>
-#include <boost/gil/extension/io/png_dynamic_io.hpp>
 #include "common/window.hpp"
 
 #include "shader.hpp"
 #include "vertexBuffer.hpp"
 #include "vertexArray.hpp"
 #include "texture.hpp"
+#include "imageLoader.hpp"
 
 bool run;
 struct EventHandler : Peanuts::genericEventHandler{
@@ -47,7 +45,7 @@ std::string loadShader(const std::string& sourceFile){
 namespace Peanuts{
     int Main() {
         run = true;
-        Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(std::pair<int,int>(640,480),Peanuts::Centered()), Peanuts::OpenGLVersion(3, 1));
+        Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(std::make_pair(640,480),Peanuts::Centered()), Peanuts::OpenGLVersion(3, 1));
         auto win  = Peanuts::Window::create(windowOptions);
         EventHandler eventHandler;
 
@@ -102,62 +100,21 @@ namespace Peanuts{
         gldr::VertexBuffer textureCoordBuffer;
         textureCoordBuffer.bufferData(textureCoord);
 
-//        typedef boost::mpl::vector<boost::gil::rgba8_image_t> ImageTypes; // I think the more types you add here, the more flexible the code will be... but at what cost?
-//        boost::gil::any_image<ImageTypes> image;
-//        boost::gil::png_read_image("resource/images/steam.png",image);
 
-//        boost::gil::image_view<boost::gil::rgba8_image_t> imageView;
-
-        boost::gil::rgba8_image_t image;
-        boost::gil::png_read_image("resource/images/steam.png", image);
-        std::cout << "Width: " << image.width() << std::endl << "Height: " << image.height() << std::endl << "Channels: " << boost::gil::num_channels<boost::gil::rgba8_image_t>() << std::endl;
-
-        struct DumbPixel{
-            unsigned char r,g,b,a;
-        };
-//        std::vector<DumbPixel> rawImageData;
-//        for(int row = 0; row < image.height(); ++row){
-//            for(int column = 0; column < image.width(); ++column){
-//                rawImageData.push_back(DumbPixel{0.0,0.0,1.0,1.0});
-//
-//            }
-//        }
-
-        struct PixelInserter{
-                std::vector<DumbPixel>* storage;
-                PixelInserter(std::vector<DumbPixel>* s) : storage(s) {}
-                void operator()(boost::gil::rgba8_pixel_t p) const {
-                    //get_color(p,red_t())
-                    //storage->push_back(DumbPixel{boost::gil::at_c<0>(p), boost::gil::at_c<1>(p), boost::gil::at_c<2>(p), boost::gil::at_c<3>(p)});
-                    //storage->push_back(DumbPixel{
-                    //    boost::gil::get_color(p, boost::gil::red_t()),
-                    //    boost::gil::get_color(p, boost::gil::green_t()),
-                    //    boost::gil::get_color(p, boost::gil::blue_t()),
-                    //    boost::gil::get_color(p, boost::gil::alpha_t())
-                    //});
-                    storage->push_back(DumbPixel{p[0], p[1], p[2], p[3]});
-                }
-        };
-
-        std::vector<DumbPixel> extractedPixelData;
-        extractedPixelData.reserve(image.width() * image.height() * boost::gil::num_channels<boost::gil::rgba8_image_t>());
-        boost::gil::for_each_pixel(boost::gil::const_view(image), PixelInserter(&extractedPixelData));
-
-//        boost::gil::rgb8_image_t image;
-//        boost::gil::png_read_and_convert_image("resource/images/crate.JPG", image);
-//boost::fil::image_read_settings<jpeg_tag> readSettings;
-//boost::fil::rgb8_image_t newImage;
-//boost::fil::read_image(stream, newImage, readSettings);
         gldr::Texture tex;
         tex.setFiltering(gldr::Texture::FilteringDirection::Minification, gldr::Texture::FilteringMode::Linear);
         tex.setFiltering(gldr::Texture::FilteringDirection::Magnification, gldr::Texture::FilteringMode::Linear);
-        tex.imageData(48, 48, // I know this based on the file I am using, non hardcoded version can comelater
-            gldr::Texture::Format::RGBA,
-            gldr::Texture::InternalFormat::RGBA,
-            gldr::Texture::DataType::UnsignedByte,
-            //rawImageData.data()
-            extractedPixelData.data()
-        );
+        {
+            auto image = loadImage("resource/images/steam.png");
+            
+            tex.imageData(image.width, image.height,
+                gldr::Texture::Format::RGBA,
+                gldr::Texture::InternalFormat::RGBA,
+                gldr::Texture::DataType::UnsignedByte,
+                //rawImageData.data()
+                image.data.data()
+            );
+        }
 
         gldr::Program program(loadShader("resource/shaders/basic.vert"), loadShader("resource/shaders/basic.frag"));
         GLint position_attribute = program.getAttribLocation("position");
