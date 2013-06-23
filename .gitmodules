@@ -7,3 +7,6 @@
 [submodule "gldr"]
 	path = gldr
 	url = git@github.com:GLDRorg/GLDR.git
+[submodule "glm"]
+	path = glm
+	url = git@github.com:g-truc/glm.git

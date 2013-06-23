@@ -6,6 +6,7 @@
 #include <sstream>
 #include "common/window.hpp"
 
+#include "util/camera.hpp"
 #include "shader.hpp"
 #include "vertexBuffer.hpp"
 #include "vertexArray.hpp"
@@ -13,6 +14,9 @@
 #include "imageLoader.hpp"
 
 bool run;
+glm::mat4 modelMat, viewMat, projectionMat;
+util::Camera cam;
+
 struct EventHandler : Peanuts::genericEventHandler{
     using Peanuts::genericEventHandler::operator();
     void operator()(const Peanuts::Event::Close& event) const{
@@ -20,8 +24,26 @@ struct EventHandler : Peanuts::genericEventHandler{
         run = false;
     }
     void operator()(const Peanuts::Event::KeyDown& event) const{
-        if (event.key == Peanuts::KeyCode::Q){
+        if (event.key == Peanuts::KeyCode::ESC){
             run = false;
+        }
+        if (event.key == Peanuts::KeyCode::W){
+            cam.forward(0.1f);
+        }
+        if (event.key == Peanuts::KeyCode::S){
+            cam.forward(-0.1f);
+        }
+        if (event.key == Peanuts::KeyCode::A){
+            cam.pan(glm::vec2(0.1f, 0.0f));
+        }
+        if (event.key == Peanuts::KeyCode::D){
+            cam.pan(glm::vec2(-0.1f, 0.0f));
+        }
+        if (event.key == Peanuts::KeyCode::LEFT){
+            cam.rotateYaw(-5.0f);
+        }
+        if (event.key == Peanuts::KeyCode::RIGHT){
+            cam.rotateYaw(5.0f);
         }
     }
 };
@@ -56,10 +78,10 @@ namespace Peanuts{
         //gl::PolygonMode(gl::GL_FRONT, gl::GL_FILL);
 
         std::vector<GLfloat> vertexData = {
-            -0.5, -0.5,
-            0.5, -0.5,
-            0.5, 0.5,
-            -0.5, 0.5,
+            -0.5, -0.5, -0.5,
+            0.5, -0.5, -0.5,
+            0.5, 0.5, -0.5,
+            -0.5, 0.5, -0.5,
         };
         std::vector<GLuint> indexdata = {
             0, 1, 2,
@@ -71,19 +93,6 @@ namespace Peanuts{
             0.0,0.0,1.0,
             0.0,1.0,1.0
         };
-//        for(int i = 0; i < 12; ++i) {
-//            float t = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-//            colors.push_back(9*(1-t)*t*t*t);
-//            colors.push_back(15*(1-t)*(1-t)*t*t);
-//            colors.push_back(8.5*(1-t)*(1-t)*(1-t)*t);
-//            i += 3;
-//        }
-//        std::vector<GLfloat> textureCoord = {
-//            -1.0, -1.0,
-//            2.0, -1.0,
-//            2.0, 2.0,
-//            -1.0, 2.0,
-//        };
         std::vector<GLfloat> textureCoord = {
             0.0, 1.0,
             1.0, 1.0,
@@ -100,7 +109,6 @@ namespace Peanuts{
         gldr::VertexBuffer textureCoordBuffer;
         textureCoordBuffer.bufferData(textureCoord);
 
-
         gldr::Texture tex;
         tex.setFiltering(gldr::Texture::FilteringDirection::Minification, gldr::Texture::FilteringMode::Linear);
         tex.setFiltering(gldr::Texture::FilteringDirection::Magnification, gldr::Texture::FilteringMode::Linear);
@@ -111,19 +119,20 @@ namespace Peanuts{
                 gldr::Texture::Format::RGBA,
                 gldr::Texture::InternalFormat::RGBA,
                 gldr::Texture::DataType::UnsignedByte,
-                //rawImageData.data()
                 image.data.data()
             );
         }
 
         gldr::Program program(loadShader("resource/shaders/basic.vert"), loadShader("resource/shaders/basic.frag"));
+        program.use();
         GLint position_attribute = program.getAttribLocation("position");
         GLint color_attribute = program.getAttribLocation("color");
-        GLint texture_coord_attribute = program.getAttribLocation("texture_coord");
-        program.use();
+        GLint texture_coord_attribute = program.getAttribLocation("texture_coord"); 
+        GLint modelview = program.getUniformLocation("ModelView");
+        GLint projection = program.getUniformLocation("Projection");
 
         vertexBuffer.bind();
-        gl::VertexAttribPointer(position_attribute, 2, gl::GL_FLOAT, gl::GL_FALSE, 0, 0);
+        gl::VertexAttribPointer(position_attribute, 3, gl::GL_FLOAT, gl::GL_FALSE, 0, 0);
         gl::EnableVertexAttribArray(position_attribute);
         colorBuffer.bind();
         gl::VertexAttribPointer(color_attribute, 3, gl::GL_FLOAT, gl::GL_FALSE, 0, 0);
@@ -132,12 +141,18 @@ namespace Peanuts{
         gl::VertexAttribPointer(texture_coord_attribute, 2, gl::GL_FLOAT, gl::GL_FALSE, 0, 0);
         gl::EnableVertexAttribArray(texture_coord_attribute);
 
+        projectionMat = cam.projection();
+        cam.pos = glm::vec3(0.0f, 0.0f, -2.0f);
+        cam.dir = glm::vec3(0.0f, 0.0f, 1.0f);
+
         while (run) {
             gl::Clear(gl::GL_COLOR_BUFFER_BIT);
+            gl::UniformMatrix4fv(modelview, 1, gl::GL_FALSE, glm::value_ptr(cam.modelView()));
+            gl::UniformMatrix4fv(projection, 1, gl::GL_FALSE, glm::value_ptr(projectionMat));
             vao.bind();
             gl::DrawElements(gl::GL_TRIANGLES, 6, gl::GL_UNSIGNED_INT, 0);
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
             win->pumpEvents();
             while(auto event = win->pollEvent()){
                 boost::apply_visitor(eventHandler, *event);

@@ -29,7 +29,6 @@ void flipImage(std::vector<T>& image, int width){
     tempRowA.reserve(width);
     tempRowB.reserve(width);
     int rowCount = image.size() / width;
-    std::cout << "'" << image.size() << "' pixels at '" << width << "' pixels per row makes for '" << rowCount << "' rows, by my maths" << std::endl;
     int otherRow = rowCount;
     int currentRow = 0;
     while(currentRow < otherRow){
