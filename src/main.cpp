@@ -7,7 +7,7 @@
 #include "common/window.hpp"
 
 #include "util/camera.hpp"
-#include "shader.hpp"
+#include "program.hpp"
 #include "vertexBuffer.hpp"
 #include "vertexArray.hpp"
 #include "texture.hpp"
@@ -46,6 +46,20 @@ struct EventHandler : Peanuts::genericEventHandler{
             cam.rotateYaw(5.0f);
         }
     }
+    void operator()(const Peanuts::Event::WindowResize& event) const{
+        std::cout << "New width : " << event.width << std::endl << "New height: " << event.height << std::endl;
+        cam.aspectRatio = static_cast<float>(event.width) / static_cast<float>(event.height);
+        projectionMat = cam.projection();
+    }
+    void operator()(const Peanuts::Event::FocusLoose& event) const{
+        std::cout << "Focus lost :(" << std::endl;
+    }
+    void operator()(const Peanuts::Event::FocusGain& event) const{
+        std::cout << "Focus gained :)" << std::endl;
+    }
+    void operator()(const Peanuts::Event::MouseMove& event) const{
+        std::cout << "Mouse (" << event.x << ", " << event.y << ")" << std::endl;
+    }
 };
 
 std::string loadShader(const std::string& sourceFile){
@@ -67,7 +81,7 @@ std::string loadShader(const std::string& sourceFile){
 namespace Peanuts{
     int Main() {
         run = true;
-        Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(std::make_pair(640,480),Peanuts::Centered()), Peanuts::OpenGLVersion(3, 1));
+        Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(Peanuts::size(640,480), Peanuts::position(100,100)), Peanuts::OpenGLVersion(3, 1));
         auto win  = Peanuts::Window::create(windowOptions);
         EventHandler eventHandler;
 
@@ -77,48 +91,48 @@ namespace Peanuts{
         gl::ClearColor(1.0f, 0.0f, 0.0f, 0.0f);
         //gl::PolygonMode(gl::GL_FRONT, gl::GL_FILL);
 
-        std::vector<GLfloat> vertexData = {
-            -0.5, -0.5, -0.5,
-            0.5, -0.5, -0.5,
-            0.5, 0.5, -0.5,
-            -0.5, 0.5, -0.5,
-        };
-        std::vector<GLuint> indexdata = {
-            0, 1, 2,
-            2, 3, 0
-        };
-        std::vector<GLfloat> colors = {
-            1.0,0.0,0.0,
-            0.0,1.0,0.0,
-            0.0,0.0,1.0,
-            0.0,1.0,1.0
-        };
-        std::vector<GLfloat> textureCoord = {
-            0.0, 1.0,
-            1.0, 1.0,
-            1.0, 0.0,
-            0.0, 0.0,
-        };
-
         gldr::VertexBuffer vertexBuffer;
-        vertexBuffer.bufferData(vertexData);
         gldr::VertexBuffer colorBuffer;
-        colorBuffer.bufferData(colors);
         gldr::VertexBuffer indexBuffer(gldr::VertexBuffer::BufferType::INDEX);
-        indexBuffer.bufferData(indexdata);
         gldr::VertexBuffer textureCoordBuffer;
-        textureCoordBuffer.bufferData(textureCoord);
-
-        gldr::Texture tex;
-        tex.setFiltering(gldr::Texture::FilteringDirection::Minification, gldr::Texture::FilteringMode::Linear);
-        tex.setFiltering(gldr::Texture::FilteringDirection::Magnification, gldr::Texture::FilteringMode::Linear);
         {
-            auto image = loadImage("resource/images/pheonixflames.png");
+            std::vector<GLfloat> vertexData = {
+                -0.5, -0.5, -0.5,
+                0.5, -0.5, -0.5,
+                0.5, 0.5, -0.5,
+                -0.5, 0.5, -0.5,
+            };
+            std::vector<GLuint> indexdata = {
+                0, 1, 2,
+                2, 3, 0
+            };
+            std::vector<GLfloat> colors = {
+                1.0,0.0,0.0,
+                0.0,1.0,0.0,
+                0.0,0.0,1.0,
+                0.0,1.0,1.0
+            };
+            std::vector<GLfloat> textureCoord = {
+                0.0, 1.0,
+                1.0, 1.0,
+                1.0, 0.0,
+                0.0, 0.0,
+            };
+            vertexBuffer.bufferData(vertexData);
+            colorBuffer.bufferData(colors);
+            indexBuffer.bufferData(indexdata);
+            textureCoordBuffer.bufferData(textureCoord);
+        }
 
+        gldr::Texture2d tex;
+        {
+            tex.setFiltering(gldr::textureOptions::FilterDirection::Minification, gldr::textureOptions::FilterMode::Linear);
+            tex.setFiltering(gldr::textureOptions::FilterDirection::Magnification, gldr::textureOptions::FilterMode::Linear);
+            auto image = loadImage("resource/images/pheonixflames.png");
             tex.imageData(image.width, image.height,
-                gldr::Texture::Format::RGBA,
-                gldr::Texture::InternalFormat::RGBA,
-                gldr::Texture::DataType::UnsignedByte,
+                gldr::textureOptions::Format::RGBA,
+                gldr::textureOptions::InternalFormat::RGB,
+                gldr::textureOptions::DataType::UnsignedByte,
                 image.data.data()
             );
         }
