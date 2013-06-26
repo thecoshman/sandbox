@@ -60,6 +60,26 @@ struct EventHandler : Peanuts::genericEventHandler{
     void operator()(const Peanuts::Event::MouseMove& event) const{
         std::cout << "Mouse (" << event.x << ", " << event.y << ")" << std::endl;
     }
+    void operator()(const Peanuts::Event::MouseDown& event) const{
+        switch(event.button){
+            case Peanuts::MouseButton::LEFT: std::cout << "LMB Down" << std::endl; break;
+            case Peanuts::MouseButton::MIDDLE: std::cout << "MMB Down" << std::endl; break;
+            case Peanuts::MouseButton::RIGHT: std::cout << "RMB Down" << std::endl; break;
+            case Peanuts::MouseButton::SCROLL_UP: std::cout << "scroll up Down" << std::endl; break;
+            case Peanuts::MouseButton::SCROLL_DOWN: std::cout << "scroll down Down" << std::endl; break;
+            default: break;
+        }
+    }
+    void operator()(const Peanuts::Event::MouseUp& event) const{
+        switch(event.button){
+            case Peanuts::MouseButton::LEFT: std::cout << "LMB Up" << std::endl; break;
+            case Peanuts::MouseButton::MIDDLE: std::cout << "MMB Up" << std::endl; break;
+            case Peanuts::MouseButton::RIGHT: std::cout << "RMB Up" << std::endl; break;
+            case Peanuts::MouseButton::SCROLL_UP: std::cout << "scroll up Up" << std::endl; break;
+            case Peanuts::MouseButton::SCROLL_DOWN: std::cout << "scroll down Up" << std::endl; break;
+            default: break;
+        }
+    }
 };
 
 std::string loadShader(const std::string& sourceFile){
