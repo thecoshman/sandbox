@@ -101,7 +101,8 @@ std::string loadShader(const std::string& sourceFile){
 namespace Peanuts{
     int Main() {
         run = true;
-        Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(Peanuts::size(640,480), Peanuts::position(100,100)), Peanuts::OpenGLVersion(3, 1));
+        //Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(Peanuts::size(640,480), Peanuts::position(100,100)), Peanuts::OpenGLVersion(3, 1));
+        Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(Peanuts::size(640,480), Peanuts::Centered()), Peanuts::OpenGLVersion(3, 1));
         auto win  = Peanuts::Window::create(windowOptions);
         EventHandler eventHandler;
 
