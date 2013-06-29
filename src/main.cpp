@@ -51,15 +51,6 @@ struct EventHandler : Peanuts::genericEventHandler{
         cam.aspectRatio = static_cast<float>(event.width) / static_cast<float>(event.height);
         projectionMat = cam.projection();
     }
-    void operator()(const Peanuts::Event::FocusLoose& event) const{
-        std::cout << "Focus lost :(" << std::endl;
-    }
-    void operator()(const Peanuts::Event::FocusGain& event) const{
-        std::cout << "Focus gained :)" << std::endl;
-    }
-    void operator()(const Peanuts::Event::MouseMove& event) const{
-        std::cout << "Mouse (" << event.x << ", " << event.y << ")" << std::endl;
-    }
     void operator()(const Peanuts::Event::MouseDown& event) const{
         switch(event.button){
             case Peanuts::MouseButton::LEFT: std::cout << "LMB Down" << std::endl; break;
@@ -102,10 +93,11 @@ namespace Peanuts{
     int Main() {
         run = true;
         //Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(Peanuts::size(640,480), Peanuts::position(100,100)), Peanuts::OpenGLVersion(3, 1));
-        //Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(Peanuts::size(640,480), Peanuts::Centered()), Peanuts::OpenGLVersion(3, 1));
-        Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(Peanuts::size(640,480), Peanuts::Centered(), Peanuts::Borders::Off), Peanuts::OpenGLVersion(3, 1));
+        Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(Peanuts::size(640,480), Peanuts::Centered()), Peanuts::OpenGLVersion(3, 1));
+        //Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(Peanuts::size(640,480), Peanuts::Centered(), Peanuts::Borders::Off), Peanuts::OpenGLVersion(3, 1));
         //Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(Peanuts::Maximised()), Peanuts::OpenGLVersion(3, 1));
-        //Peanuts::WindowOptions windowOptions("GL test", Peanuts::FullScreen({640,480}), Peanuts::OpenGLVersion(3, 1));
+        //Peanuts::WindowOptions windowOptions("GL test", Peanuts::Windowed(Peanuts::Maximised(), Peanuts::Borders::Off), Peanuts::OpenGLVersion(3, 1));
+        //Peanuts::WindowOptions windowOptions("GL test", Peanuts::FullScreen(), Peanuts::OpenGLVersion(3, 1));
         auto win  = Peanuts::Window::create(windowOptions);
         EventHandler eventHandler;
 
