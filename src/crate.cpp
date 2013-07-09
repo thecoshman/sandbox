@@ -57,7 +57,8 @@ namespace {
     };
 }
 
-Crate::Crate(){
+Crate::Crate():
+    directionalLight(1.0f, 1.0f, 1.0f, 1.0f){
     {
         gldr::VertexShader vertexShader(util::loadShader("resource/shaders/crate.vert"));
         gldr::FragmentShader fragmentShader(util::loadShader("resource/shaders/crate.frag"));
@@ -86,6 +87,8 @@ Crate::Crate(){
     modelview = program.getUniformLocation("ModelView");
     projection = program.getUniformLocation("Projection");
     positionUniform = program.getUniformLocation("position");
+    dLightColor = program.getUniformLocation("directionalLight.color");
+    dLightAmbient = program.getUniformLocation("directionalLight.ambientIntensity");
     vertexBuffer.bind();
     gl::VertexAttribPointer(position_attribute, 3, gl::GL_FLOAT, gl::GL_FALSE, 0, 0);
     gl::EnableVertexAttribArray(position_attribute);
@@ -101,6 +104,8 @@ void Crate::draw() const{
     texture.bind();
     program.use();
     gl::Uniform3f(positionUniform, position.x, position.y, position.z);
+    gl::Uniform3f(dLightColor, directionalLight.color.x, directionalLight.color.y, directionalLight.color.z);
+    gl::Uniform1f(dLightAmbient, directionalLight.ambientIntensity);
     gl::DrawElements(gl::GL_TRIANGLES, 3 * 8, gl::GL_UNSIGNED_INT, 0);
 }
 

@@ -11,10 +11,18 @@
 #include "imageLoader.hpp"
 #include "util/loadShader.hpp"
 
+struct DirectionalLight{
+    DirectionalLight(float r, float g, float b, float a):color(r,g,b), ambientIntensity(a){}
+    glm::vec3 color;
+    float ambientIntensity;
+};
+
 struct Crate{
     Crate();
     void draw() const;
     void projectWith(const glm::mat4& projectionMatix);
+
+    DirectionalLight directionalLight;
 private:
     gldr::Program program;
     gldr::VertexArray vao;
@@ -28,6 +36,8 @@ private:
     GLint texture_coord_attribute;
     GLint modelview;
     GLint projection;
+    GLint dLightColor;
+    GLint dLightAmbient;
 
     glm::vec3 position;
     GLint positionUniform;
